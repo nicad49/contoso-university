@@ -14,20 +14,62 @@ namespace ContosoUniversity.Controllers
     public class StudentsController : Controller
     {
         private readonly SchoolContext _context;
-        // GET: /<controller>/
-        // public IActionResult Index()
-        // {
-        //     return View();
-        // }
 
         public StudentsController(SchoolContext context)
         {
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(
+            string sortOrder, 
+            string currentFilter,
+            string searchString,
+            int? page)
         {
-            return View(await _context.Students.ToListAsync());
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+
+            if (searchString != null)
+            {
+                page = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+
+            var students = from s in _context.Students select s;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                students = students.Where(s => s.LastName.Contains(searchString)
+                    || s.FirstMidName.Contains(searchString));
+            }
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    students = students.OrderByDescending(s => s.LastName);
+                    break;
+                case "Date":
+                    students = students.OrderBy(s => s.EnrollmentDate);
+                    break;
+                case "date_desc":
+                    students = students.OrderByDescending(s => s.EnrollmentDate);
+                    break;
+                default:
+                    students = students.OrderBy(s => s.LastName);
+                    break;
+            }
+
+            int pageSize = 3;
+            // The two question marks represent the null-coalescing operator. The null-coalescing 
+            // operator defines a default value for a nullable type; the expression (page ?? 1) means 
+            // return the value of page if it has a value, or return 1 if page is null.
+            return View(await PaginatedList<Student>.CreateAsync(students.AsNoTracking(), page ?? 1, pageSize));
         }
 
         public async Task<IActionResult> Details(int? id)
