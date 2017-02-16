@@ -12,6 +12,12 @@ namespace ContosoUniversity.Data
     public DbSet<Course> Courses { get; set; }
     public DbSet<Enrollment> Enrollments { get; set; }
     public DbSet<Student> Students { get; set; }
+    public DbSet<Department> Departments { get; set; }
+    public DbSet<Instructor> Instructors { get; set; }
+    public DbSet<OfficeAssignment> OfficeAssignments { get; set; }
+    public DbSet<CourseAssignment> CourseAssignments { get; set; }
+
+
 
     // Normally EF creates tables that have the names the same as the DBSet Property names
     // In some cases, it might be preferred to have alternative names (i.e. singular vs plural, etc)
@@ -21,6 +27,12 @@ namespace ContosoUniversity.Data
       modelBuilder.Entity<Course>().ToTable("Course");
       modelBuilder.Entity<Enrollment>().ToTable("Enrollment");
       modelBuilder.Entity<Student>().ToTable("Student");
+      modelBuilder.Entity<Department>().ToTable("Department");
+      modelBuilder.Entity<Instructor>().ToTable("Instructor");
+      modelBuilder.Entity<OfficeAssignment>().ToTable("OfficeAssignment");
+      modelBuilder.Entity<CourseAssignment>().ToTable("CourseAssignment");
+
+      modelBuilder.Entity<CourseAssignment>().HasKey(c => new { c.CourseID, c.InstructorID });
     }
   }
 }
